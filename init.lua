@@ -1,0 +1,1 @@
+-- hs.logger.defaultLogLevel = 'debug'
