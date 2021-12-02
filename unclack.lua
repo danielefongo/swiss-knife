@@ -1,39 +1,48 @@
-local enabled = false
-local resetTime = 0.5
+unclack = {}
+unclack.__index = unclack
 
---
-
-local unclack = hs.menubar.new()
-
-local function setTitle()
-  if enabled then
-    unclack:setTitle("❌🎤")
+function unclack:_setTitle()
+  if self.enabled then
+    self.menu:setTitle("❌🎤")
   else
-    unclack:setTitle("🎤")
+    self.menu:setTitle("🎤")
   end
 end
 
-local function muteInput(bool)
-  for _,device in ipairs(hs.audiodevice.allInputDevices()) do
+function unclack:_muteInput(bool)
+  for _, device in ipairs(hs.audiodevice.allInputDevices()) do
     device:setMuted(bool)
   end
 end
 
-local delayedEnableMicrophone = hs.timer.delayed.new(resetTime, hs.fnutils.partial(muteInput, false))
-
-local function keyEventCallback(event)
-  if event:getType() == 10 and enabled then
-    muteInput(true)
-    delayedEnableMicrophone:start()
+function unclack:_handleKey(event)
+  if event:getType() == 10 and self.enabled then
+    self:_muteInput(true)
+    self.delayedMicrophoneEnable:start()
   end
 end
 
-local function toggleUnclack()
-  enabled = not enabled
-  setTitle()
+function unclack:start()
+  self.keyEventHandler:start()
+  self:_setTitle()
 end
 
-setTitle()
-keyEventtap = hs.eventtap.new({hs.eventtap.event.types.keyDown}, keyEventCallback)
-keyEventtap:start()
-hs.hotkey.bind({"ctrl", "alt", "command"}, "M", toggleUnclack)
+function unclack:toggle()
+  self.enabled = not self.enabled
+  self:_setTitle()
+end
+
+function unclack.new(init)
+  local u = setmetatable({keys = {}}, unclack)
+  u.resetTime = init.resetTime or 0.5
+
+  u.enabled = false
+  u.menu = hs.menubar.new()
+  u.delayedMicrophoneEnable = hs.timer.delayed.new(u.resetTime, function() u:_muteInput(false) end)
+  u.keyEventHandler = hs.eventtap.new({hs.eventtap.event.types.keyDown}, function(e) u:_handleKey(e) end)
+
+  return u
+end
+
+
+return unclack
