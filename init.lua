@@ -2,15 +2,19 @@
 
 require("jumpcut")
 require("unclack")
+require("tabber")
 
-unclack = unclack.new({resetTime=0.5})
 jumpcut = jumpcut.new({})
+unclack = unclack.new({resetTime=0.5})
+tabber = tabber.new()
 
-hs.hotkey.bind({"ctrl", "alt", "command"}, "M", function() unclack:toggle() end)
 hs.hotkey.bind({"cmd", "alt"}, "v", function() jumpcut:popup() end)
+hs.hotkey.bind({"ctrl", "alt", "command"}, "M", function() unclack:toggle() end)
+hs.hotkey.bind({"alt"}, "space", function() tabber:show() end)
 
-unclack:start()
 jumpcut:start()
+unclack:start()
+tabber:start()
 
 hs.hotkey.bind({"cmd", "alt", "ctrl"}, 'r', function()
   hs.reload()

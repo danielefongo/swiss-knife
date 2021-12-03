@@ -1,10 +1,4 @@
-local function slice(table, first, last, step)
-   local sliced = {}
-   for i = first or 1, last or #table, step or 1 do
-      sliced[#sliced+1] = table[i]
-   end
-   return sliced
-end
+table_utils = require("utils.table")
 
 function string.limitShape(item, maxWith, maxHeight)
   local lines = {}
@@ -15,7 +9,7 @@ function string.limitShape(item, maxWith, maxHeight)
      table.insert(lines, line)
   end
 
-  shortenedLines = slice(lines, 0, maxHeight, 1)
+  shortenedLines = table_utils.slice(lines, 0, maxHeight, 1)
   if not (#shortenedLines == #lines) then
      table.insert(shortenedLines, "…")
   end
