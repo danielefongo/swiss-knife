@@ -29,6 +29,7 @@ end
 
 function unclack:toggle()
   self.enabled = not self.enabled
+  self:_muteInput(false)
   self:_setTitle()
 end
 
