@@ -103,8 +103,8 @@ end
 function jumpcut:popup()
    if not self.popupOpen then
       self.popupOpen = true
-      self.nextCommandHandler = hs.hotkey.bind(self.nextShortcut.mod, self.nextShortcut.key, function() self:_popupNext() end)
-      self.previousCommandHandler = hs.hotkey.bind(self.previousShortcut.mod, self.previousShortcut.key, function() self:_popupPrevious() end)
+      self.nextCommandHandler = hs.hotkey.bind(self.nextShortcut[1], self.nextShortcut[2], function() self:_popupNext() end)
+      self.previousCommandHandler = hs.hotkey.bind(self.previousShortcut[1], self.previousShortcut[2], function() self:_popupPrevious() end)
       self.enterCommandHandler = hs.hotkey.bind({}, "return", function() self:_popupSelected() end)
    end
 
@@ -117,7 +117,6 @@ function jumpcut:popup()
    self.previousPopup = hs.alert.show(showedItem, self.popupStyle, hs.window.focusedWindow():screen(), self.popupDuration)
 end
 
-
 function jumpcut.new(init)
    local j = setmetatable({keys = {}}, jumpcut)
    j.historySize = init.historySize or 100
@@ -126,8 +125,8 @@ function jumpcut.new(init)
    j.popupDuration = init.popupDuration or 2
    j.popupStyle = init.popupStyle or {strokeWidth=1, fillColor={white=1, alpha=0.1}, textSize=14, radius=6}
    j.honorClearContent = init.honorClearContent or false
-   j.nextShortcut = init.nextShortcut or {mod={}, key="up"}
-   j.previousShortcut = init.previousShortcut or {mod={}, key="down"}
+   j.nextShortcut = init.nextShortcut or {{}, "up"}
+   j.previousShortcut = init.previousShortcut or {{}, "down"}
 
    j.copiedItem = nil
    j.actualIndex = 0

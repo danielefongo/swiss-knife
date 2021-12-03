@@ -4,7 +4,7 @@ require("jumpcut")
 require("unclack")
 require("tabber")
 
-jumpcut = jumpcut.new({})
+jumpcut = jumpcut.new({nextShortcut={{"cmd", "alt"}, "up"}, previousShortcut={{"cmd", "alt"}, "down"}})
 unclack = unclack.new({resetTime=0.5})
 tabber = tabber.new()
 
