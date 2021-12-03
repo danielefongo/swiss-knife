@@ -24,12 +24,12 @@ end
 
 function unclack:start()
   self.keyEventHandler:start()
+  self:_muteInput(false)
   self:_setTitle()
 end
 
 function unclack:toggle()
   self.enabled = not self.enabled
-  self:_muteInput(false)
   self:_setTitle()
 end
 
