@@ -4,12 +4,23 @@ tabber.__index = tabber
 fuzzy = require("utils.fuzzy")
 table_utils = require("utils.table")
 
+-- workaround: focus chooser when opening it from non-hammerspoon windows
+local hammerSpoonFilter = hs.window.filter.new()
+hammerSpoonFilter:allowApp("Hammerspoon")
+hammerSpoonFilter:subscribe(hs.window.filter.windowCreated, function (a)
+  if (a:title() == "Chooser") then
+    a:focus()
+  end
+end)
+
 local function sortByScore(t, a, b)
   return t[b].score < t[a].score
 end
 
 function tabber:_focus(win)
-  win.win:focus()
+  if win then
+    win.win:focus()
+  end
 end
 
 function tabber:_choices(input)
