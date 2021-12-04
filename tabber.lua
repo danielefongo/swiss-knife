@@ -23,6 +23,14 @@ function tabber:_focus(win)
   end
 end
 
+function tabber:_close()
+  win = self.chooser:selectedRowContents()
+  if win then
+    win.win:close()
+  end
+  self.chooser:show()
+end
+
 function tabber:_choices(input)
   local choices = {}
   local sortedChoices = {}
@@ -47,6 +55,7 @@ end
 function tabber:start()
   self.chooser = hs.chooser.new(function(win) tabber:_focus(win) end)
   self.chooser:queryChangedCallback(function(input) tabber:_choices(input) end)
+  self.chooser:rightClickCallback(function() tabber:_close(chooserino) end)
 end
 
 function tabber.new()
