@@ -87,7 +87,7 @@ function jumpcut:_popupSelected()
 end
 
 function jumpcut:start()
-   self.history = settings.get("dotfiles.jumpcut") or {"ciao"}
+   self.history = settings.get("dotfiles.jumpcut") or {}
    while (#self.history > self.historySize) do
       table.remove(self.history,1)
    end
