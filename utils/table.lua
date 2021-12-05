@@ -18,18 +18,23 @@ function sortedPairs(t, order)
   end
 end
 
--- https://www.reddit.com/r/lua/comments/417v44/comment/cz0oydn/?utm_source=share&utm_medium=web2x&context=3
-function shallowEqual(a,b) --algorithm is O(n log n), due to table growth.
-  if #a ~= #b then return false end -- early out
-  local t1,t2 = {}, {} -- temp tables
-  for k,v in pairs(a) do -- copy all values into keys for constant time lookups
-      t1[k] = (t1[k] or 0) + 1 -- make sure we track how many times we see each value.
+-- https://stackoverflow.com/a/30757399
+function equal(t1,t2,ignore_mt)
+  local ty1 = type(t1)
+  local ty2 = type(t2)
+  if ty1 ~= ty2 then return false end
+  -- non-table types can be directly compared
+  if ty1 ~= 'table' and ty2 ~= 'table' then return t1 == t2 end
+  -- as well as tables which have the metamethod __eq
+  local mt = getmetatable(t1)
+  if not ignore_mt and mt and mt.__eq then return t1 == t2 end
+  for k1,v1 in pairs(t1) do
+     local v2 = t2[k1]
+     if v2 == nil or not equal(v1,v2) then return false end
   end
-  for k,v in pairs(b) do
-      t2[k] = (t2[k] or 0) + 1
-  end
-  for k,v in pairs(t1) do -- go over every element
-      if v ~= t2[k] then return false end -- if the number of times that element was seen don't match...
+  for k2,v2 in pairs(t2) do
+     local v1 = t1[k2]
+     if v1 == nil or not equal(v1,v2) then return false end
   end
   return true
 end
@@ -45,5 +50,5 @@ end
 return {
   sortedPairs = sortedPairs,
   slice = slice,
-  shallowEqual = shallowEqual
+  equal = equal
 }

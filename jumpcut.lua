@@ -27,7 +27,7 @@ function jumpcut:_clearLastItem()
 end
 
 function jumpcut:_storeItem(item)
-   if #self.history > 0 and table_utils.shallowEqual(item, self.history[#self.history]) then
+   if #self.history > 0 and table_utils.equal(item, self.history[#self.history]) then
       return
    end
 
