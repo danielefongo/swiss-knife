@@ -18,6 +18,22 @@ function sortedPairs(t, order)
   end
 end
 
+-- https://www.reddit.com/r/lua/comments/417v44/comment/cz0oydn/?utm_source=share&utm_medium=web2x&context=3
+function shallowEqual(a,b) --algorithm is O(n log n), due to table growth.
+  if #a ~= #b then return false end -- early out
+  local t1,t2 = {}, {} -- temp tables
+  for k,v in pairs(a) do -- copy all values into keys for constant time lookups
+      t1[k] = (t1[k] or 0) + 1 -- make sure we track how many times we see each value.
+  end
+  for k,v in pairs(b) do
+      t2[k] = (t2[k] or 0) + 1
+  end
+  for k,v in pairs(t1) do -- go over every element
+      if v ~= t2[k] then return false end -- if the number of times that element was seen don't match...
+  end
+  return true
+end
+
 function slice(table, first, last, step)
   local sliced = {}
   for i = first or 1, last or #table, step or 1 do
@@ -28,5 +44,6 @@ end
 
 return {
   sortedPairs = sortedPairs,
-  slice = slice
+  slice = slice,
+  shallowEqual = shallowEqual
 }

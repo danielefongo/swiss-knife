@@ -1,4 +1,5 @@
 require("utils.string")
+local table_utils = require("utils.table")
 local pasteboard = require("hs.pasteboard")
 local settings = require("hs.settings")
 local MAX_PREVIEW_SIZE = 200
@@ -26,6 +27,10 @@ function jumpcut:_clearLastItem()
 end
 
 function jumpcut:_storeItem(item)
+   if #self.history > 0 and table_utils.shallowEqual(item, self.history[#self.history]) then
+      return
+   end
+
    self.actualIndex = 0
    if (#self.history == self.historySize) then
       table.remove(self.history, 1)
