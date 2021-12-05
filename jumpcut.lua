@@ -1,17 +1,27 @@
 require("utils.string")
 local pasteboard = require("hs.pasteboard")
 local settings = require("hs.settings")
+local MAX_PREVIEW_SIZE = 200
 
 jumpcut = {}
 jumpcut.__index = jumpcut
 
+local function preview(image)
+   size = image:size()
+   maxSize = math.max(size.h, size.w)
+   ratio = math.min(1, MAX_PREVIEW_SIZE / maxSize)
+   newSize = {h = math.floor(size.h * ratio), w = math.floor(size.w * ratio)}
+   return image:setSize(newSize)
+end
+
 function jumpcut:_pasteItem(item)
-   self.copiedItem = item
-   pasteboard.setContents(item)
+   self.editingPasteboard = true
+   pasteboard.writeAllData(item)
    hs.eventtap.keyStroke({"cmd"}, "v")
 end
 
 function jumpcut:_clearAllItems()
+   self.editingPasteboard = true
    pasteboard.clearContents()
    self.history = {}
    settings.set("dotfiles.jumpcut", self.history)
@@ -23,10 +33,7 @@ function jumpcut:_clearLastItem()
 end
 
 function jumpcut:_storeItem(item)
-   if (self.copiedItem == item) then return end
-
    self.actualIndex = 0
-   self.copiedItem = item
    if (#self.history == self.historySize) then
       table.remove(self.history, 1)
    end
@@ -34,12 +41,38 @@ function jumpcut:_storeItem(item)
    settings.set("dotfiles.jumpcut", self.history)
 end
 
-function jumpcut:_handleCopy(current_clipboard)
-   if (current_clipboard == nil and self.honorClearContent) then
-      self:_clearLastItem()
-   else
-      self:_storeItem(current_clipboard)
+function jumpcut:_handleCopy()
+   if self.editingPasteboard then
+      self.editingPasteboard = false
+      return
    end
+
+   textContent = hs.pasteboard.readString()
+   imageContent = hs.pasteboard.readImage()
+   data = hs.pasteboard.readAllData()
+
+   if imageContent then
+      if not self.storeImages then
+         return
+      end
+      data["preview"] = preview(imageContent):encodeAsURLString()
+   end
+   if textContent then
+      data["text"] = textContent
+   end
+   self:_storeItem(data)
+   self.actualIndex = 0
+end
+
+function jumpcut:_menubarTitle(item, lines)
+   local elements = {}
+   if item["preview"] then
+      table.insert(elements, "📷")
+   end
+   if item["text"] then
+      table.insert(elements, item["text"])
+   end
+   return string.limitShape(table.concat(elements, " + "), self.labelLength, lines)
 end
 
 function jumpcut:_menubar(key)
@@ -50,7 +83,7 @@ function jumpcut:_menubar(key)
    end
 
    for _, item in pairs(self.history) do
-      title = string.limitShape(item, self.labelLength, 1)
+      title = self:_menubarTitle(item)
       table.insert(data, 1, {title = title, fn = function() self:_pasteItem(item) end })
    end
 
@@ -101,6 +134,10 @@ function jumpcut:showMenu()
 end
 
 function jumpcut:popup()
+   if (#self.history == 0) then
+      return
+   end
+
    if not self.popupOpen then
       self.popupOpen = true
       self.nextCommandHandler = hs.hotkey.bind(self.nextShortcut[1], self.nextShortcut[2], function() self:_popupNext() end)
@@ -109,26 +146,31 @@ function jumpcut:popup()
    end
 
    local selectedItem = self.history[#self.history - self.actualIndex]
+   local selectedIndex = self.actualIndex + 1
 
    hs.alert.closeSpecific(self.previousPopup)
-   trimmedItem = string.limitShape(selectedItem, self.labelLength, self.labelHeight)
-   showedItem = (self.actualIndex+1)..")\n"..trimmedItem
    self.delayedPopupClose:start()
-   self.previousPopup = hs.alert.show(showedItem, self.popupStyle, hs.window.focusedWindow():screen(), self.popupDuration)
+   if selectedItem["preview"] then
+      image = hs.image.imageFromURL(selectedItem["preview"])
+      self.previousPopup = hs.alert.showWithImage(selectedIndex, image, self.popupStyle, hs.window.focusedWindow():screen(), self.popupDuration)
+   elseif selectedItem["text"] then
+      text = selectedIndex .. ")\n" .. string.limitShape(selectedItem["text"], self.labelLength, self.labelHeight)
+      self.previousPopup = hs.alert.show(text, self.popupStyle, hs.window.focusedWindow():screen(), self.popupDuration)
+   end
 end
 
 function jumpcut.new(init)
    local j = setmetatable({keys = {}}, jumpcut)
+   j.storeImages = init.storeImages or false
    j.historySize = init.historySize or 100
    j.labelLength = init.labelLength or 100
    j.labelHeight = init.labelHeight or 10
    j.popupDuration = init.popupDuration or 2
-   j.popupStyle = init.popupStyle or {strokeWidth=1, fillColor={white=1, alpha=0.1}, textSize=14, radius=6}
+   j.popupStyle = init.popupStyle or {strokeWidth=1, fillColor={alpha=1}, textSize=14, radius=6}
    j.honorClearContent = init.honorClearContent or false
    j.nextShortcut = init.nextShortcut or {{}, "up"}
    j.previousShortcut = init.previousShortcut or {{}, "down"}
 
-   j.copiedItem = nil
    j.actualIndex = 0
    j.popupOpen = false
    j.previousPopup = nil
