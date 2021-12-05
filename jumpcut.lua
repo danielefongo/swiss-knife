@@ -62,7 +62,7 @@ function jumpcut:_handleCopy()
    self.actualIndex = 0
 end
 
-function jumpcut:_menubarTitle(item, lines)
+function jumpcut:_menubarTitle(item)
    local elements = {}
    if item["preview"] then
       table.insert(elements, "📷")
@@ -70,7 +70,7 @@ function jumpcut:_menubarTitle(item, lines)
    if item["text"] then
       table.insert(elements, item["text"])
    end
-   return string.limitShape(table.concat(elements, " + "), self.labelLength, lines)
+   return string.limitShape(table.concat(elements, " + "), self.labelLength, 1)
 end
 
 function jumpcut:_menubar(key)
