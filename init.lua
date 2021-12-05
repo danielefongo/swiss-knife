@@ -13,6 +13,7 @@ unclack = unclack.new({resetTime=0.5})
 tabber = tabber.new()
 
 hs.hotkey.bind({"cmd", "alt"}, "v", function() jumpcut:popup() end)
+hs.hotkey.bind({"cmd", "alt", "shift"}, "v", function() jumpcut:clearAll() end)
 hs.hotkey.bind({"ctrl", "alt", "command"}, "M", function() unclack:toggle() end)
 hs.hotkey.bind({"alt"}, "space", function() tabber:show() end)
 

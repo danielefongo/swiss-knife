@@ -20,13 +20,6 @@ function jumpcut:_pasteItem(item)
    hs.eventtap.keyStroke({"cmd"}, "v")
 end
 
-function jumpcut:_clearAllItems()
-   self.editingPasteboard = true
-   pasteboard.clearContents()
-   self.history = {}
-   settings.set("dotfiles.jumpcut", self.history)
-end
-
 function jumpcut:_clearLastItem()
    table.remove(self.history,#self.history)
    settings.set("dotfiles.jumpcut", self.history)
@@ -88,7 +81,7 @@ function jumpcut:_menubar(key)
    end
 
    table.insert(data, {title = "-"})
-   table.insert(data, {title = "Clear All", fn = function() self:_clearAllItems() end })
+   table.insert(data, {title = "Clear All", fn = function() self:clearAll() end })
 
    return data
 end
@@ -129,8 +122,11 @@ function jumpcut:start()
    self.menu:setMenu(function() return self:_menubar() end)
 end
 
-function jumpcut:showMenu()
-   self.menu:popupMenu(hs.mouse.absolutePosition())
+function jumpcut:clearAll()
+   self.editingPasteboard = true
+   pasteboard.clearContents()
+   self.history = {}
+   settings.set("dotfiles.jumpcut", self.history)
 end
 
 function jumpcut:popup()
